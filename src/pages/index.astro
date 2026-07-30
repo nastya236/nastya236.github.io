@@ -1,0 +1,83 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
+	<p class="intro">{SITE_DESCRIPTION}</p>
+
+	<h2 class="visually-hidden">Posts</h2>
+
+	{
+		posts.length === 0 ? (
+			<p class="empty">
+				No posts yet. Add a Markdown file to <code>src/content/blog/</code> to
+				publish one.
+			</p>
+		) : (
+			<ul class="post-list">
+				{posts.map((post) => (
+					<li>
+						<a href={`/blog/${post.id}/`}>{post.data.title}</a>
+						<p class="date">
+							<FormattedDate date={post.data.pubDate} />
+						</p>
+						<p class="desc">{post.data.description}</p>
+					</li>
+				))}
+			</ul>
+		)
+	}
+</BaseLayout>
+
+<style>
+	.intro {
+		font-size: 1.1rem;
+		color: var(--muted);
+		margin: 0 0 2.75rem;
+		max-width: 34rem;
+	}
+
+	.post-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+	}
+
+	.post-list a {
+		font-size: 1.2rem;
+		font-weight: 600;
+		color: var(--fg);
+		text-decoration: none;
+		letter-spacing: -0.01em;
+	}
+
+	.post-list a:hover {
+		color: var(--accent);
+	}
+
+	.date {
+		margin: 0.2rem 0 0;
+		font-size: 0.825rem;
+		color: var(--muted);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.desc {
+		margin: 0.45rem 0 0;
+		color: var(--muted);
+	}
+
+	.empty {
+		color: var(--muted);
+	}
+</style>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#fffdf9" />
+  <rect x="0" y="0" width="1200" height="10" fill="#a8431c" />
+  <text
+    x="80"
+    y="330"
+    font-family="Palatino, Georgia, serif"
+    font-size="76"
+    font-weight="600"
+    fill="#1b1b19"
+  >Anastasiia Filippova</text>
+  <text
+    x="80"
+    y="400"
+    font-family="-apple-system, Helvetica, Arial, sans-serif"
+    font-size="34"
+    fill="#6d6b64"
+  >nastya236.github.io</text>
+</svg>
