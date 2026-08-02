@@ -245,16 +245,23 @@ th {
 	border-radius: 3px;
 }
 
-/* KaTeX: let wide display equations scroll sideways instead of overflowing
-   the page on narrow screens. */
-.katex-display {
-	overflow-x: auto;
-	overflow-y: hidden;
-	padding-block: 0.4em;
+/* MathJax SVG output. `currentColor` inheritance is what makes dark mode work,
+   and the scroll container stops wide equations overflowing on phones. */
+mjx-container[jax='SVG'] {
+	color: var(--fg);
 }
 
-.katex {
-	font-size: 1.02em;
+mjx-container[jax='SVG'][display='true'] {
+	display: block;
+	overflow-x: auto;
+	overflow-y: hidden;
+	margin-block: 1rem;
+	padding-block: 0.2rem;
+	text-align: center;
+}
+
+mjx-container[jax='SVG'] svg {
+	max-width: none;
 }
 
 .visually-hidden {
