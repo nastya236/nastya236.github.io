@@ -152,6 +152,19 @@ td {
 	border-radius: 3px;
 }
 
+/* KaTeX: let wide display equations scroll sideways instead of overflowing
+   the page on narrow screens. */
+.katex-display {
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding-block: 0.4em;
+}
+
+/* KaTeX sets its own font size slightly larger than surrounding text. */
+.katex {
+	font-size: 1.04em;
+}
+
 .visually-hidden {
 	position: absolute;
 	width: 1px;

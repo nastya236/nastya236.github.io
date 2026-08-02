@@ -22,6 +22,28 @@ Then write **Markdown**.
 `title`, `description`, and `pubDate` are required. Optional: `tags`,
 `updatedDate`, and `draft: true` to hide a post while you work on it.
 
+## Math
+
+LaTeX works in any post, typeset at build time by KaTeX. No JavaScript is sent to
+the browser and the fonts are bundled locally, so there is no CDN dependency.
+
+Inline math uses single dollars, display math uses double dollars on their own
+lines:
+
+```markdown
+The gradient $dx = r(v - c\hat{x})$ is a projection, because
+
+$$
+\|\hat{x}\|^2 = \frac{\sum_i x_i^2}{s} = d
+$$
+
+and so the subtracted term is exactly $\operatorname{proj}_{\hat{x}}(v)$.
+```
+
+A malformed expression renders in red rather than failing the build, so check the
+page after writing heavy math. If you ever need a literal dollar sign in prose,
+escape it: `\$`.
+
 ## Previewing locally
 
 ```sh
