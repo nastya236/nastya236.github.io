@@ -1,28 +1,40 @@
+/* Palette and type scale taken from the pydata-sphinx-theme / sphinx-book-theme
+   source that MLX's docs are built with, so this matches the real thing rather
+   than an approximation of it. */
+
 :root {
-	/* Sphinx / PyData-style neutral palette. */
 	--bg: #ffffff;
-	--fg: #24292f;
-	--muted: #57606a;
-	--border: #dfe2e5;
-	--accent: #0a7bbd;
-	--accent-hover: #085e90;
-	--surface: #f8f9fb;
-	--reading-width: 46rem;
+	--fg: #222832;
+	--muted: #48566b;
+	--border: #d1d5da;
+	--accent: #0a7d91;
+	--accent-hover: #06616f;
+	--surface: #f3f4f5;
+	--heading: #14181e;
+	--inline-code: #912583;
+
+	/* sphinx-book-theme caps its content column at 768px. */
+	--reading-width: 48rem;
+
 	--font-sans:
-		-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+		-apple-system, 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica Neue', 'Arial',
+		sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 	--font-mono:
-		ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+		'SFMono-Regular', 'Menlo', 'Consolas', 'Monaco', 'Liberation Mono',
+		'Lucida Console', monospace;
 }
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--bg: #14181d;
-		--fg: #e6edf3;
-		--muted: #9aa5b1;
-		--border: #2d333b;
-		--accent: #6cb6ff;
-		--accent-hover: #91cbff;
-		--surface: #1c2128;
+		--bg: #14181e;
+		--fg: #ced6dd;
+		--muted: #9ca4af;
+		--border: #48566b;
+		--accent: #3fb1c5;
+		--accent-hover: #6ac7d8;
+		--surface: #29313d;
+		--heading: #ffffff;
+		--inline-code: #f3c7ee;
 	}
 }
 
@@ -42,7 +54,7 @@ body {
 	color: var(--fg);
 	font-family: var(--font-sans);
 	font-size: 1rem;
-	line-height: 1.6;
+	line-height: 1.65;
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
@@ -58,9 +70,10 @@ body {
 
 main {
 	flex: 1;
-	padding-block: 2rem 4rem;
+	padding-block: 1.5rem 4rem;
 }
 
+/* PyData links: no underline at rest, thick underline on hover. */
 a {
 	color: var(--accent);
 	text-decoration: none;
@@ -69,17 +82,39 @@ a {
 a:hover {
 	color: var(--accent-hover);
 	text-decoration: underline;
-	text-underline-offset: 2px;
+	text-decoration-skip-ink: none;
+	text-decoration-thickness: max(3px, 0.1875rem, 0.12em);
 }
 
-/* Docs-style headings: tighter, heavier, less letter-spacing drama. */
+/* Headings are light weight (400) and tightly leaded in this theme — the
+   size does the work, not the weight. */
 h1,
 h2,
 h3,
-h4 {
-	line-height: 1.3;
-	font-weight: 600;
+h4,
+h5,
+h6 {
+	color: var(--heading);
+	font-weight: 400;
+	line-height: 1.15;
+	margin: 2.75rem 0 1.05rem;
 	text-wrap: balance;
+}
+
+h1 {
+	font-size: 2.5rem;
+}
+
+h2 {
+	font-size: 2rem;
+}
+
+h3 {
+	font-size: 1.75rem;
+}
+
+h4 {
+	font-size: 1.5rem;
 }
 
 img,
@@ -97,9 +132,9 @@ hr {
 blockquote {
 	margin-inline: 0;
 	padding: 0.6rem 1rem;
-	border-left: 3px solid var(--accent);
+	border-left: 0.25rem solid var(--accent);
 	background: var(--surface);
-	color: var(--muted);
+	color: var(--fg);
 }
 
 blockquote > :first-child {
@@ -110,30 +145,29 @@ blockquote > :last-child {
 	margin-bottom: 0;
 }
 
+/* Inline code in this theme is magenta monospace with no box around it. */
 code {
 	font-family: var(--font-mono);
 	font-size: 0.875em;
-	background: var(--surface);
-	border: 1px solid var(--border);
-	padding: 0.1em 0.3em;
-	border-radius: 3px;
+	color: var(--inline-code);
 }
 
 pre {
 	position: relative;
 	background: var(--surface) !important;
-	padding: 0.9rem 1rem;
-	border-radius: 4px;
+	color: var(--fg);
+	padding: 0.8rem 1rem;
+	border-radius: 0.25rem;
 	border: 1px solid var(--border);
 	overflow-x: auto;
-	font-size: 0.85rem;
+	font-size: 0.875rem;
 	line-height: 1.55;
 }
 
+/* Code inside a block is syntax-highlighted, so it must not inherit the
+   magenta inline-code color. */
 pre code {
-	background: none;
-	border: 0;
-	padding: 0;
+	color: inherit;
 	font-size: inherit;
 }
 
@@ -148,18 +182,17 @@ pre code {
 	}
 }
 
-/* Copy button on code blocks, like Sphinx's sphinx-copybutton. */
+/* Copy button, matching sphinx-copybutton's placement and quiet styling. */
 .copy-btn {
 	position: absolute;
-	top: 0.4rem;
-	right: 0.4rem;
-	font: inherit;
-	font-size: 0.72rem;
+	top: 0.35rem;
+	right: 0.35rem;
 	font-family: var(--font-sans);
+	font-size: 0.7rem;
 	color: var(--muted);
-	background: var(--bg);
+	background: var(--surface);
 	border: 1px solid var(--border);
-	border-radius: 3px;
+	border-radius: 0.25rem;
 	padding: 0.15rem 0.45rem;
 	cursor: pointer;
 	opacity: 0;
@@ -172,8 +205,8 @@ pre:hover .copy-btn,
 }
 
 .copy-btn:hover {
-	color: var(--fg);
-	border-color: var(--muted);
+	color: var(--accent);
+	border-color: var(--accent);
 }
 
 .copy-btn[data-copied='true'] {
@@ -197,7 +230,7 @@ table {
 th,
 td {
 	text-align: left;
-	padding: 0.45rem 0.6rem;
+	padding: 0.5rem 0.65rem;
 	border: 1px solid var(--border);
 }
 

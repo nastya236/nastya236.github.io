@@ -49,20 +49,20 @@ const { title, description, pubDate, updatedDate, tags = [] } = Astro.props;
 
 <style>
 	.post-header {
-		margin-bottom: 2rem;
-		padding-bottom: 1.25rem;
-		border-bottom: 1px solid var(--border);
+		margin-bottom: 1.5rem;
 	}
 
+	/* Headings inherit the global type scale (h1 = 2.5rem, weight 400); only
+	   the top margin needs cancelling since this one starts the page. */
 	.post-header h1 {
-		font-size: 2rem;
-		margin: 0 0 0.5rem;
+		margin-top: 0;
+		margin-bottom: 0.75rem;
 	}
 
 	.meta {
 		margin: 0;
 		color: var(--muted);
-		font-size: 0.85rem;
+		font-size: 0.9rem;
 	}
 
 	.tags {
@@ -70,39 +70,18 @@ const { title, description, pubDate, updatedDate, tags = [] } = Astro.props;
 		flex-wrap: wrap;
 		gap: 0.35rem;
 		list-style: none;
-		margin: 0.8rem 0 0;
+		margin: 0.75rem 0 0;
 		padding: 0;
 	}
 
 	.tags li {
-		font-size: 0.72rem;
 		font-family: var(--font-mono);
+		font-size: 0.75rem;
 		color: var(--muted);
 		background: var(--surface);
 		border: 1px solid var(--border);
-		border-radius: 3px;
+		border-radius: 0.25rem;
 		padding: 0.1rem 0.4rem;
-	}
-
-	/* Docs-style body copy: sans-serif, moderate size, generous heading
-	   spacing so sections are easy to scan. */
-	.prose {
-		font-size: 1rem;
-		line-height: 1.65;
-	}
-
-	.prose :global(h2) {
-		font-size: 1.35rem;
-		margin-top: 2.5rem;
-		margin-bottom: 0.75rem;
-		padding-bottom: 0.3rem;
-		border-bottom: 1px solid var(--border);
-	}
-
-	.prose :global(h3) {
-		font-size: 1.1rem;
-		margin-top: 1.9rem;
-		margin-bottom: 0.5rem;
 	}
 
 	.prose :global(p),
@@ -119,6 +98,6 @@ const { title, description, pubDate, updatedDate, tags = [] } = Astro.props;
 		margin-top: 3.5rem;
 		padding-top: 1.25rem;
 		border-top: 1px solid var(--border);
-		font-size: 0.875rem;
+		font-size: 0.9rem;
 	}
 </style>

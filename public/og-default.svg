@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <rect width="1200" height="630" fill="#ffffff" />
-  <rect x="0" y="0" width="1200" height="10" fill="#0a7bbd" />
+  <rect x="0" y="0" width="1200" height="10" fill="#0a7d91" />
   <text
     x="80"
     y="330"
     font-family="-apple-system, Helvetica, Arial, sans-serif"
     font-size="72"
     font-weight="600"
-    fill="#24292f"
+    fill="#222832"
   >Anastasiia Filippova</text>
   <text
     x="80"
     y="398"
     font-family="ui-monospace, Menlo, monospace"
     font-size="32"
-    fill="#57606a"
+    fill="#48566b"
   >nastya236.github.io</text>
 </svg>
