@@ -1,0 +1,39 @@
+---
+// Adds a Sphinx-style "copy" button to every code block on the page.
+// Progressive enhancement: if JS is off, code blocks still work normally.
+---
+
+<script>
+	function addCopyButtons() {
+		document.querySelectorAll('pre').forEach((pre) => {
+			if (pre.querySelector('.copy-btn')) return;
+
+			const code = pre.querySelector('code');
+			if (!code) return;
+
+			const button = document.createElement('button');
+			button.className = 'copy-btn';
+			button.type = 'button';
+			button.textContent = 'copy';
+			button.setAttribute('aria-label', 'Copy code to clipboard');
+
+			button.addEventListener('click', async () => {
+				try {
+					await navigator.clipboard.writeText(code.textContent ?? '');
+					button.textContent = 'copied';
+					button.dataset.copied = 'true';
+				} catch {
+					button.textContent = 'failed';
+				}
+				setTimeout(() => {
+					button.textContent = 'copy';
+					delete button.dataset.copied;
+				}, 1600);
+			});
+
+			pre.appendChild(button);
+		});
+	}
+
+	addCopyButtons();
+</script>

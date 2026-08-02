@@ -1,25 +1,28 @@
 :root {
-	--bg: #fffdf9;
-	--fg: #1b1b19;
-	--muted: #6d6b64;
-	--border: #e7e4db;
-	--accent: #a8431c;
-	--surface: #f6f4ee;
-	--reading-width: 40rem;
+	/* Sphinx / PyData-style neutral palette. */
+	--bg: #ffffff;
+	--fg: #24292f;
+	--muted: #57606a;
+	--border: #dfe2e5;
+	--accent: #0a7bbd;
+	--accent-hover: #085e90;
+	--surface: #f8f9fb;
+	--reading-width: 46rem;
 	--font-sans:
-		-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-	--font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
-	--font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+		-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+	--font-mono:
+		ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--bg: #16161a;
-		--fg: #e8e6e1;
-		--muted: #9b988f;
-		--border: #2e2e34;
-		--accent: #ef8c62;
-		--surface: #202027;
+		--bg: #14181d;
+		--fg: #e6edf3;
+		--muted: #9aa5b1;
+		--border: #2d333b;
+		--accent: #6cb6ff;
+		--accent-hover: #91cbff;
+		--surface: #1c2128;
 	}
 }
 
@@ -38,8 +41,8 @@ body {
 	background: var(--bg);
 	color: var(--fg);
 	font-family: var(--font-sans);
-	font-size: 1.0625rem;
-	line-height: 1.65;
+	font-size: 1rem;
+	line-height: 1.6;
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
@@ -60,20 +63,22 @@ main {
 
 a {
 	color: var(--accent);
-	text-decoration-thickness: 1px;
-	text-underline-offset: 2px;
+	text-decoration: none;
 }
 
 a:hover {
-	text-decoration-style: solid;
+	color: var(--accent-hover);
+	text-decoration: underline;
+	text-underline-offset: 2px;
 }
 
+/* Docs-style headings: tighter, heavier, less letter-spacing drama. */
 h1,
 h2,
 h3,
 h4 {
-	line-height: 1.25;
-	letter-spacing: -0.015em;
+	line-height: 1.3;
+	font-weight: 600;
 	text-wrap: balance;
 }
 
@@ -81,7 +86,6 @@ img,
 video {
 	max-width: 100%;
 	height: auto;
-	border-radius: 6px;
 }
 
 hr {
@@ -92,31 +96,43 @@ hr {
 
 blockquote {
 	margin-inline: 0;
-	padding-left: 1.1rem;
-	border-left: 3px solid var(--border);
+	padding: 0.6rem 1rem;
+	border-left: 3px solid var(--accent);
+	background: var(--surface);
 	color: var(--muted);
-	font-style: italic;
+}
+
+blockquote > :first-child {
+	margin-top: 0;
+}
+
+blockquote > :last-child {
+	margin-bottom: 0;
 }
 
 code {
 	font-family: var(--font-mono);
-	font-size: 0.9em;
+	font-size: 0.875em;
 	background: var(--surface);
-	padding: 0.15em 0.35em;
-	border-radius: 4px;
+	border: 1px solid var(--border);
+	padding: 0.1em 0.3em;
+	border-radius: 3px;
 }
 
 pre {
-	padding: 1rem 1.1rem;
-	border-radius: 8px;
+	position: relative;
+	background: var(--surface) !important;
+	padding: 0.9rem 1rem;
+	border-radius: 4px;
 	border: 1px solid var(--border);
 	overflow-x: auto;
-	font-size: 0.9rem;
-	line-height: 1.5;
+	font-size: 0.85rem;
+	line-height: 1.55;
 }
 
 pre code {
 	background: none;
+	border: 0;
 	padding: 0;
 	font-size: inherit;
 }
@@ -126,24 +142,68 @@ pre code {
 	.astro-code,
 	.astro-code span {
 		color: var(--shiki-dark) !important;
-		background-color: var(--shiki-dark-bg) !important;
 		font-style: var(--shiki-dark-font-style) !important;
 		font-weight: var(--shiki-dark-font-weight) !important;
 		text-decoration: var(--shiki-dark-text-decoration) !important;
 	}
 }
 
+/* Copy button on code blocks, like Sphinx's sphinx-copybutton. */
+.copy-btn {
+	position: absolute;
+	top: 0.4rem;
+	right: 0.4rem;
+	font: inherit;
+	font-size: 0.72rem;
+	font-family: var(--font-sans);
+	color: var(--muted);
+	background: var(--bg);
+	border: 1px solid var(--border);
+	border-radius: 3px;
+	padding: 0.15rem 0.45rem;
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.12s ease;
+}
+
+pre:hover .copy-btn,
+.copy-btn:focus-visible {
+	opacity: 1;
+}
+
+.copy-btn:hover {
+	color: var(--fg);
+	border-color: var(--muted);
+}
+
+.copy-btn[data-copied='true'] {
+	opacity: 1;
+	color: var(--accent);
+	border-color: var(--accent);
+}
+
+@media (hover: none) {
+	.copy-btn {
+		opacity: 1;
+	}
+}
+
 table {
 	width: 100%;
 	border-collapse: collapse;
-	font-size: 0.95rem;
+	font-size: 0.9rem;
 }
 
 th,
 td {
 	text-align: left;
-	padding: 0.5rem 0.6rem;
-	border-bottom: 1px solid var(--border);
+	padding: 0.45rem 0.6rem;
+	border: 1px solid var(--border);
+}
+
+th {
+	background: var(--surface);
+	font-weight: 600;
 }
 
 :focus-visible {
@@ -160,9 +220,8 @@ td {
 	padding-block: 0.4em;
 }
 
-/* KaTeX sets its own font size slightly larger than surrounding text. */
 .katex {
-	font-size: 1.04em;
+	font-size: 1.02em;
 }
 
 .visually-hidden {
