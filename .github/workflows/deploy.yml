@@ -34,28 +34,21 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # npm ci enforces the lockfile's integrity hashes. Those were computed
-          # from tarballs served by a corporate mirror, so if the mirror repacked
-          # anything they will not match npmjs.org and ci aborts. Fall back to a
-          # fresh resolve, and surface the reason as an annotation.
-          if npm ci 2>&1 | tee /tmp/npm.log; then
+          # redirect rather than pipe: a pipe would hand back tee's exit status,
+          # not npm's, and silently swallow the failure.
+          if npm ci > /tmp/npm.log 2>&1; then
             echo "npm ci ok"
           else
-            echo "::warning::npm ci failed, fell back to npm install. Tail: $(tail -c 900 /tmp/npm.log | tr '\n' ' ' | sed 's/::/../g')"
+            echo "::warning::npm ci failed: $(grep -m8 'npm error' /tmp/npm.log | tr '\n' ' ' | sed 's/::/../g' | head -c 900)"
             rm -f package-lock.json
-            npm install --no-audit --no-fund 2>&1 | tee -a /tmp/npm.log
+            npm install --no-audit --no-fund
           fi
-          echo "::notice::install tail: $(tail -c 700 /tmp/npm.log | tr '\n' ' ' | sed 's/::/../g')"
-          echo "::notice::node_modules: $(test -d node_modules && echo present || echo MISSING), entries $(ls node_modules 2>/dev/null | wc -l), astro $(test -e node_modules/.bin/astro && echo yes || echo no)"
+          echo "::notice::node_modules $(test -d node_modules && echo present || echo MISSING), astro $(test -e node_modules/.bin/astro && echo yes || echo no)"
 
       - name: Build site
         run: |
-          echo "::notice::node $(node -v), npm $(npm -v)"
-          echo "::notice::bin: $(ls node_modules/.bin 2>/dev/null | tr '\n' ' ' | head -c 400)"
-          if npm run build 2>&1 | tee /tmp/build.log; then
-            echo "build ok"
-            echo "::notice::dist: $(ls dist 2>&1 | tr '\n' ' ' | head -c 300)"
-            echo "::notice::dist files: $(find dist -type f 2>/dev/null | wc -l), pwd $(pwd)"
+          if npm run build > /tmp/build.log 2>&1; then
+            echo "::notice::dist files: $(find dist -type f | wc -l)"
           else
             echo "::error::build failed: $(tail -c 900 /tmp/build.log | tr '\n' ' ' | sed 's/::/../g')"
             exit 1
