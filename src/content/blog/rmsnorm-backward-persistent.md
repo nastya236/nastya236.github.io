@@ -249,7 +249,7 @@ But this raises a question: how do we hide the latency?
 
 In the standard many-block scenario we get it for free. There are far more blocks
 than the SMs can run at once, so whenever a block stalls on a global load the
-SMSP switches to another resident warp and the SM keeps doing useful work.
+warp scheduler switches to another resident warp and the SM keeps doing useful work.
 But a persistent kernel gives that up by construction because we launch exactly enough
 blocks just to fill the machine. 
 
