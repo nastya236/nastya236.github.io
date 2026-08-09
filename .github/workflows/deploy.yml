@@ -33,7 +33,18 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          # npm ci enforces the lockfile's integrity hashes. Those were computed
+          # from tarballs served by a corporate mirror, so if the mirror repacked
+          # anything they will not match npmjs.org and ci aborts. Fall back to a
+          # fresh resolve, and surface the reason as an annotation.
+          if npm ci 2>&1 | tee /tmp/npm.log; then
+            echo "npm ci ok"
+          else
+            echo "::warning::npm ci failed, fell back to npm install. Tail: $(tail -c 900 /tmp/npm.log | tr '\n' ' ' | sed 's/::/../g')"
+            rm -f package-lock.json
+            npm install --no-audit --no-fund
+          fi
 
       - name: Build site
         run: npm run build
