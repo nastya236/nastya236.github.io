@@ -47,7 +47,15 @@ jobs:
           fi
 
       - name: Build site
-        run: npm run build
+        run: |
+          echo "::notice::node $(node -v), npm $(npm -v)"
+          echo "::notice::bin: $(ls node_modules/.bin 2>/dev/null | tr '\n' ' ' | head -c 400)"
+          if npm run build 2>&1 | tee /tmp/build.log; then
+            echo "build ok"
+          else
+            echo "::error::build failed: $(tail -c 900 /tmp/build.log | tr '\n' ' ' | sed 's/::/../g')"
+            exit 1
+          fi
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
