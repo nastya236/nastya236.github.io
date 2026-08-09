@@ -459,10 +459,9 @@ colsum_f32<<<cdiv(N,256), 256>>>(...);
 
 One B200, bf16:
 
-![Time per call against row count, for hidden dimensions 1024, 2048, 4096 and 8192. Dashed lines are the naive three-kernel path, solid lines the persistent two-kernel one. Both are straight, and the solid lines sit well below the dashed ones everywhere except at the smallest shape.](/rmsnorm_sweep.png)
+![Time per call against row count, for hidden dimensions 1024, 2048, 4096 and 8192. Dashed lines are the naive three-kernel path, solid lines the persistent two-kernel one. Both are straight, and the solid lines sit well below the dashed ones everywhere except at the smallest shape.](../../../dist/rmsnorm_sweep.png)
 
-*Dashed = naive (3 kernels), solid = persistent (2 kernels). Colour is the hidden
-dimension.*
+*Dashed = naive (3 kernels), solid = persistent (2 kernels).*
 
 ## The code
 
