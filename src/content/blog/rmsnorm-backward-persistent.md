@@ -5,7 +5,7 @@ pubDate: 2026-08-09
 draft: false
 ---
 
-RMSNorm is the default by now — in an autoregressive Transformer block you see it at least twice, often four times once you count the QK norms (and the same count again in the backward pass). Both passes are memory-bandwidth-bound: there's nowhere near enough arithmetic to hide the loads and stores behind. But backward is tricker than forward (we will see later why).
+RMSNorm is the default by now — in an autoregressive Transformer block you see it at least twice, often four times once you count the QK norms (and the same count again in the backward pass). Both passes are memory-bandwidth-bound: there's nowhere near enough arithmetic to hide the loads and stores behind. But backward is trickier than forward (we will see later why).
 I ran into this while working on the CUDA backend in MLX <a href="#ref-1">[1]</a>. The idea isn't mine — I took it from QuACK's <a href="#ref-2">[2]</a> RMSNorm backward.
 To see where the problem comes from, let's look at the math.
 
@@ -25,9 +25,9 @@ $$
 
 The forward pass seems easy: we have one reduction over each row, which can be
 handled quite naturally by launching one thread block per row (since hidden dim 
-for mjority of models is <= 8192, it is covered by 1 thread block). So each thread
+for the majority of models is <= 8192, it is covered by 1 thread block). So each thread
 processes multiple elements, followed by a warp-level reduction, a thread-block
-reduction, and finally the output write. Strightforward.
+reduction, and finally the output write. Straightforward.
 
 ## The backward pass
 
@@ -207,7 +207,7 @@ unavoidable, which puts it around **38%** of the machine's 8 TB/s.
 
 This works, but there is an obvious problem: we just wrote $M \times N$ values to
 global memory only to read all of them back in the next kernel. And as you remember,
-RMSNorm and it's backward are memory-bandwidth-bound operations, so this final column reduction is a
+RMSNorm and its backward are memory-bandwidth-bound operations, so this final column reduction is a
 real bottleneck (we will see it later). Two of the five passes exist only to move
 $\partial L/\partial w$ through memory — the reduction costs as much as the rest of
 the kernel put together.
