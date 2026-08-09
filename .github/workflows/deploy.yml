@@ -52,6 +52,8 @@ jobs:
           echo "::notice::bin: $(ls node_modules/.bin 2>/dev/null | tr '\n' ' ' | head -c 400)"
           if npm run build 2>&1 | tee /tmp/build.log; then
             echo "build ok"
+            echo "::notice::dist: $(ls dist 2>&1 | tr '\n' ' ' | head -c 300)"
+            echo "::notice::dist files: $(find dist -type f 2>/dev/null | wc -l), pwd $(pwd)"
           else
             echo "::error::build failed: $(tail -c 900 /tmp/build.log | tr '\n' ' ' | sed 's/::/../g')"
             exit 1
