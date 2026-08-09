@@ -200,7 +200,7 @@ block_sum_f2(cg::thread_block& block, float2 v, float2* smem) {
 ```
 
 On a B200, with hidden dim 8192 and 16384 rows in bf16, this chain takes
-**440.54 µs**. It moves 5 passes over the $M \times N$ tensor where only 3 are
+**440.54 µs**. It makes 5 passes over the $M \times N$ tensor where only 3 are
 unavoidable, which puts it around **38%** of the machine's 8 TB/s.
 
 ## Why this is not good enough
@@ -223,7 +223,7 @@ make the kernel persistent.
 
 In the naive version the grid is sized by the data: one block per row, so $M$
 blocks. In a persistent kernel it's the opposite and the grid is sized by the machine: we
-launch as many blocks as the GPU can keep resident (as many as SMs x k, where k is a heruistic),
+launch as many blocks as the GPU can keep resident (as many as SMs x k, where k is a heuristic),
 and then each block iterates, taking a new row on every step.
 
 "As many as fit" can be parsed using CUDA runtime API:
@@ -249,8 +249,8 @@ But this raises a question: how do we hide the latency?
 
 In the standard many-block scenario we get it for free. There are far more blocks
 than the SMs can run at once, so whenever a block stalls on a global load the
-quater SM scheduler switches to another resident warp and the SM keeps doing useful work.
-But persistent kernel gives that up by construction because we launch exactly enough
+SMSP switches to another resident warp and the SM keeps doing useful work.
+But a persistent kernel gives that up by construction because we launch exactly enough
 blocks just to fill the machine. 
 
 So now we have to hide the latency ourselves by pipelining the loads through
