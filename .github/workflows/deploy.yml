@@ -43,8 +43,10 @@ jobs:
           else
             echo "::warning::npm ci failed, fell back to npm install. Tail: $(tail -c 900 /tmp/npm.log | tr '\n' ' ' | sed 's/::/../g')"
             rm -f package-lock.json
-            npm install --no-audit --no-fund
+            npm install --no-audit --no-fund 2>&1 | tee -a /tmp/npm.log
           fi
+          echo "::notice::install tail: $(tail -c 700 /tmp/npm.log | tr '\n' ' ' | sed 's/::/../g')"
+          echo "::notice::node_modules: $(test -d node_modules && echo present || echo MISSING), entries $(ls node_modules 2>/dev/null | wc -l), astro $(test -e node_modules/.bin/astro && echo yes || echo no)"
 
       - name: Build site
         run: |

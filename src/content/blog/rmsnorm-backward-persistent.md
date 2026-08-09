@@ -464,6 +464,18 @@ One B200, bf16:
 *Dashed = naive (3 kernels), solid = persistent (2 kernels). Colour is the hidden
 dimension.*
 
+## The code
+
+Both kernels:
+
+[`code/rmsnorm_backward.cu`](https://github.com/nastya236/nastya236.github.io/blob/main/code/rmsnorm_backward.cu)
+
+```sh
+nvcc --generate-code=arch=compute_100a,code=sm_100a --std=c++20 \
+     rmsnorm_backward.cu -o rmsnorm_backward
+./rmsnorm_backward 8192 16384 # hidden dim, rows
+```
+
 ## References
 
 <span id="ref-1"></span>\[1] **MLX** — Apple. An array framework for machine
