@@ -1,0 +1,129 @@
+Something 
+
+RMSNorm is the gold standard by now — in a standard autoregressive Transformer block, you see it at least twice, and usually four times once you count the QK norms (and the same count for the backward pass, of course). Both the forward and backward passes are memory-bandwidth-bound kernels. 
+// here should be something about why this is important 
+
+To understand why this text exists in the first place, let’s look at the math behind the forward and backward passes.
+
+RMSNorm forward:
+
+Let $X \in \mathbb{R}^{M \times N}$ and $w \in \mathbb{R}^N$. RMSNorm scales each row by its root mean square and then applies an element-wise multiplication by the learnable weight:
+$$
+r_i = \frac{1}{\sqrt{\dfrac{1}{N}\sum_{j=1}^{N} X_{ij}^2 + \varepsilon}},
+\qquad
+\hat{X}{ij} = r_i X{ij},
+\qquad
+Y_{ij} = w_j \hat{X}_{ij}.
+$$
+The forward pass seems easy — we have one reduction over each row, which can be handled quite naturally by launching one thread block per row: each thread processes multiple elements, followed by a warp-level reduction, a thread-block reduction, and finally the output write. Straightforward.
+
+Now let’s look at the RMSNorm backward pass.
+We receive $\frac{\partial L}{\partial Y} = gY$, the incoming gradient. We need to compute two things:
+the gradient with respect to the weights, $\frac{\partial L}{\partial w}$;
+the gradient with respect to the input, $\frac{\partial L}{\partial X}$.
+Let
+$$
+V_{ij} = gY_{ij} w_j
+$$
+denote the incoming gradient after applying the gain. Then the gradient with respect to the input is
+$$
+\frac{\partial L}{\partial X_{ij}}
+= r_i V_{ij}
+r_i^3 X_{ij} \cdot \frac{1}{N}
+\sum_{k=1}^{N} V_{ik} X_{ik}.
+$$
+Just a little more math, stay with me, you won't regret it (I hope).
+
+Now, the gradient with respect to the weights is
+$$
+\frac{\partial L}{\partial w_j}
+= \sum_{i=1}^{M} gY_{ij},\hat{X}{ij}
+= \sum{i=1}^{M} gY_{ij},X_{ij},r_i.
+$$
+Here we run into a more interesting problem. To compute the weight gradient, we need to accumulate contributions from all $M$ rows. With the straightforward one-thread-block-per-row implementation, each block can compute its per-row contribution to $\frac{\partial L}{\partial w}$, but these contributions then need to be combined across rows.
+There are two natural ways to do this:
+1. use atomics to accumulate directly into the final $(N,)$ gradient;
+2. write the per-row contributions to an intermediate $(M,N)$ tensor and perform an additional reduction over $M$.
+Let’s talk about the second approach. First, we compute the per-row contributions to the weight gradient and write the intermediate tensor (M, N) to memory. Then, we launch a second kernel that reads this tensor, reduces the contributions across the $M$ rows, and writes the final $(N,)$ gradient.
+
+This how this kernel look like in CUDA:
+
+template <int N_READS = 8>
+__global__ void rmsnorm_bwd_naive(const bf16x8* __restrict__ x,
+                                  const bf16x8* __restrict__ w,
+                                  const bf16x8* __restrict__ g,
+                                  bf16x8* __restrict__ gx,
+                                  bf16x8* __restrict__ gw, int nvec,
+                                  float eps) {
+  int row = blockIdx.x;
+  int tid = threadIdx.x;
+  // shared memory for the reduction
+  __shared__ float2 smem[32];
+  size_t off = (size_t)row * nvec + tid;
+  bf16x8 xv = x[off]; // input
+  bf16x8 gv = g[off]; // grad
+  bf16x8 wv = w[tid]; // weight
+  float2 factors = make_float2(0.f, 0.f);
+// reduction within a thread -- each thread reduces 8 elements in registers 
+#pragma unroll
+  for (int i = 0; i < N_READS; i++) {
+    float t = __bfloat162float(xv.v[i]);
+    float wg = __bfloat162float(wv.v[i]) * __bfloat162float(gv.v[i]);
+    factors.x += wg * t;
+    factors.y += t * t;
+  }
+  factors = block_sum_f2(factors, smem, blockDim.x >> 5);
+  int axis_size = nvec * N_READS;
+  float meangwx = factors.x / axis_size;
+  float normalizer = rsqrtf(factors.y / axis_size + eps);
+  float normalizer3 = normalizer * normalizer * normalizer;
+  bf16x8 gxv, gwv;
+#pragma unroll
+  for (int i = 0; i < 8; i++) {
+    float xi = __bfloat162float(xv.v[i]);
+    float wi = __bfloat162float(wv.v[i]);
+    float gi = __bfloat162float(gv.v[i]);
+    gxv.v[i] =
+        __float2bfloat16(normalizer * wi * gi - xi * meangwx * normalizer3);
+    gwv.v[i] = __float2bfloat16(gi * xi * normalizer);
+  }
+  gx[off] = gxv;
+  gw[off] = gwv;
+}
+
+
+Helper functions:
+Reduction within a warp (for 2 elements):
+
+__device__ __forceinline__ float2 warp_sum_f2(float2 v) {
+  for (int o = 16; o > 0; o >>= 1) {
+    v.x += __shfl_xor_sync(0xffffffffu, v.x, o);
+    v.y += __shfl_xor_sync(0xffffffffu, v.y, o);
+  }
+  return v;
+}
+
+That is used in reduction within a block:
+
+__device__ __forceinline__ float2
+block_sum_f2(float2 v, float2* smem, int nwarps) {
+  int lane = threadIdx.x & 31;
+  int wid = threadIdx.x >> 5;
+  v = warp_sum_f2(v);
+  if (lane == 0) smem[wid] = v;
+  __syncthreads();
+  if (wid == 0) {
+    float2 t = (lane < nwarps) ? smem[lane] : make_float2(0.f, 0.f);
+    t = warp_sum_f2(t);
+    if (lane == 0) smem[0] = t;
+  }
+  __syncthreads();
+  float2 r = smem[0];
+  __syncthreads();
+  return r;
+}
+
+
+This works, but there is an obvious problem: we just wrote $M \times N$ values to global memory only to read all of them back in the next kernel. And remember, RMSNorm is a memory-bandwidth-bound operation. 
+
+So the goal of this post to explain how can we write rms backward with only a tiny column 

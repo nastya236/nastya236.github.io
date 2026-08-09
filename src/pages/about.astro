@@ -1,22 +1,287 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { SOCIALS } from '../consts';
+
+const ME = 'Anastasiia Filippova';
+
+// Shared author list — reused by the two papers with the same team.
+const COLLOBERT_TEAM = [
+	ME,
+	'Angelos Katharopoulos',
+	'David Grangier',
+	'Ronan Collobert',
+];
+
+// Newest first.
+const PUBLICATIONS = [
+	{
+		title:
+			'Optimal Splitting of Language Models from Mixtures to Specialized Domains',
+		venue: 'ICML 2026',
+		href: 'https://arxiv.org/abs/2603.19149',
+		authors: [
+			'Skyler Seto',
+			'Pierre Ablin',
+			ME,
+			'Jiayuan Ye',
+			'Louis Béthune',
+			'Angelos Katharopoulos',
+			'David Grangier',
+		],
+	},
+	{
+		title: 'Stochastic KV Routing: Enabling Adaptive Depth-wise Cache Sharing',
+		venue: 'ICLR 2026 Workshop on Test-Time Updates',
+		href: 'https://arxiv.org/abs/2604.22782',
+		authors: [ME, 'David Grangier', 'Marco Cuturi', 'João Monteiro'],
+	},
+	{
+		title: 'Scaling Categorical Flow Maps',
+		venue: 'arXiv preprint, 2026',
+		href: 'https://arxiv.org/abs/2605.07820',
+		authors: [
+			'Oscar Davis',
+			ME,
+			'Pierre Ablin',
+			'Victor Turrisi',
+			'Amitis Shidani',
+			'Marco Cuturi',
+			'Louis Béthune',
+		],
+	},
+	{
+		title: 'Partial Parameter Updates for Efficient Distributed Training',
+		venue: 'NeurIPS 2025 Workshop on Optimization for Machine Learning',
+		href: 'https://arxiv.org/abs/2509.22418',
+		authors: COLLOBERT_TEAM,
+	},
+	{
+		title: 'No Need to Talk: Asynchronous Mixture of Language Models',
+		venue: 'ICLR 2025 (Spotlight, 3.2%)',
+		href: 'https://arxiv.org/abs/2410.03529',
+		authors: COLLOBERT_TEAM,
+	},
+	{
+		title: 'Time-series attribution maps with regularized contrastive learning',
+		venue: 'AISTATS 2025',
+		href: 'https://arxiv.org/abs/2502.12977',
+		authors: [
+			'Steffen Schneider',
+			'Rodrigo González Laiz',
+			ME,
+			'Markus Frey',
+			'Mackenzie W. Mathis',
+		],
+	},
+	{
+		title:
+			'SuperAnimal pretrained pose estimation models for behavioral analysis',
+		venue: 'Nature Communications, 2024',
+		href: 'https://www.nature.com/articles/s41467-024-48792-2',
+		authors: [
+			'Shaokai Ye',
+			ME,
+			'Maxime Vidal',
+			'Steffen Schneider',
+			'Jessy Lauer',
+			'Tian Qiu',
+			'Alexander Mathis',
+			'Mackenzie Weygandt Mathis',
+		],
+	},
+];
+
+const PROJECTS = [
+	{
+		title:
+			'Neuro Sense — activity recognition and heart-rate estimation on a tiny AI chip',
+		href: 'https://polyn.ai/neurosense/',
+		blurb:
+			'Activity representations and heart-rate estimation from PPG and IMU data on a smartwatch, with the activity encoder trained by self-supervised contrastive learning. 5 bpm mean absolute error, 4% MAPE — and at 5M MAC operations the chip running it draws 0.1 mW.',
+	},
+];
 ---
 
-<BaseLayout title="About" description="A little about me.">
+<BaseLayout
+	title="About"
+	description="Anastasiia Filippova — GPU kernels, efficient training and inference of large models."
+>
 	<h1>About</h1>
 
-	<p>
-		Hi, I'm Anastasiia. This is my blog — replace this page with whatever you
-		want people to know about you.
+	<p class="lede">
+		Hi, I'm Nastya. Currently I'm a machine learning research engineer at 
+  		 <a href="https://machinelearning.apple.com"> Apple Machine Learning Research</a
+		 > ,
+  		working on <a href="https://github.com/ml-explore/mlx">MLX</a
+		> and efficient
+		training and inference of LLMs.
 	</p>
 
 	<p>
-		You can reach me on <a href="https://github.com/nastya236">GitHub</a>.
+		I am interested low precision training and quantization, GPU kernel programming,
+		distributed training and inference, and local AI. In the past I did research
+		in AI for neuroscience at the <a href="http://www.mackenziemathislab.org"
+			>Mathis Laboratory of Adaptive Intelligence</a
+		> and trained models for wearable devices at the <a
+			href="http://mil-team.com">Machine Intelligence Lab</a
+		>.
 	</p>
+
+	<h2>Background</h2>
+
+	<p>
+		I completed my MSc in Data Science at 
+		 <a href="https://www.epfl.ch/en/"> EPFL</a>. While there I interned at Apple 
+		Machine Learning Research in California, under
+		 <a href="https://bengio.abracadoudou.com"> Samy Bengio</a>, working with 
+		 <a href="https://ronan.collobert.com"> Ronan Collobert</a> and his team on
+		efficient training and inference of large language models.
+	</p>
+	<p>
+		I was also a research assistant at the
+		<a href="http://www.mackenziemathislab.org"> Mathis Laboratory of Adaptive
+		Intelligence</a>, led by Prof. Mackenzie Mathis, working on self-supervised
+		pre-training on neural and behavioural data with
+		<a href="https://stes.io"> Steffen Schneider</a>, and on foundation models for
+		animal pose estimation with <a href="https://yeshaokai.github.io"> Shaokai
+		Ye</a>. Before that I was a quantitative research intern at
+		<a href="https://www.worldquant.com"> WorldQuant</a> in New York, fine-tuning
+		LLMs on proprietary financial data.
+	</p>
+	<p>
+		I completed my BSc in Applied Mathematics and Physics at the
+		<a href="https://mipt.ru/english/"> Moscow Institute of Physics and
+		Technology</a>, where I worked at the
+		<a href="http://mil-team.com"> Machine Intelligence Lab</a> on training and
+		deploying models on wearable devices — phones, fitness watches, trackers.
+	</p>
+
+	<h2>Publications</h2>
+
+	<ol class="pubs">
+		{
+			PUBLICATIONS.map((p) => (
+				<li>
+					<a class="pub-title" href={p.href}>{p.title}</a>
+					{p.authors && (
+						<span class="pub-authors">
+							{p.authors.map((a, i) => (
+								<>
+									{i > 0 && ', '}
+									{a === ME ? <strong>{a}</strong> : a}
+								</>
+							))}
+						</span>
+					)}
+					<span class="pub-venue">{p.venue}</span>
+				</li>
+			))
+		}
+	</ol>
+
+	<p class="note">
+		Full list on <a
+			href="https://scholar.google.com/citations?hl=en&user=5iee9WoAAAAJ"
+			>Google Scholar</a
+		>.
+	</p>
+
+	<h2>Other projects</h2>
+
+	<ul class="projects">
+		{
+			PROJECTS.map((p) => (
+				<li>
+					<a class="pub-title" href={p.href}>{p.title}</a>
+					<span class="pub-venue">{p.blurb}</span>
+				</li>
+			))
+		}
+	</ul>
+
+	<h2>Elsewhere</h2>
+
+	<ul class="links">
+		{SOCIALS.map((s) => (
+			<li>
+				<a href={s.href} rel="me">{s.label}</a>
+			</li>
+		))}
+	</ul>
 
 	<style>
 		h1 {
 			margin-top: 0;
+		}
+
+		.lede {
+			font-size: 1.1rem;
+		}
+
+		h2 {
+			font-size: 1.15rem;
+			font-weight: 600;
+			margin-top: 2.25rem;
+			margin-bottom: 0.6rem;
+		}
+
+		.pubs,
+		.projects {
+			margin: 0;
+			padding: 0;
+			display: flex;
+			flex-direction: column;
+			gap: 1.1rem;
+		}
+
+		.pubs {
+			list-style: decimal;
+			padding-left: 1.4rem;
+		}
+
+		.pubs li::marker {
+			color: var(--muted);
+			font-size: 0.875rem;
+		}
+
+		.projects {
+			list-style: none;
+		}
+
+		.pub-title {
+			display: block;
+		}
+
+		.pub-authors,
+		.pub-venue {
+			display: block;
+			font-size: 0.875rem;
+		}
+
+		.pub-authors {
+			color: var(--fg);
+			margin-top: 0.15rem;
+		}
+
+		.pub-venue {
+			color: var(--muted);
+			margin-top: 0.1rem;
+		}
+
+		.note {
+			margin-top: 1.1rem;
+			font-size: 0.9rem;
+			color: var(--muted);
+		}
+
+		.links {
+			list-style: none;
+			margin: 0;
+			padding: 0;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1.25rem;
+			font-size: 0.95rem;
 		}
 	</style>
 </BaseLayout>
