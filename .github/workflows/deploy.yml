@@ -24,35 +24,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
 
+      # `npm install`, not `npm ci`: the committed lockfile is generated on
+      # macOS and is missing sharp's platform-gated @emnapi/* entries that
+      # Linux resolution needs, which makes `npm ci` refuse to run.
       - name: Install dependencies
-        run: |
-          # redirect rather than pipe: a pipe would hand back tee's exit status,
-          # not npm's, and silently swallow the failure.
-          if npm ci > /tmp/npm.log 2>&1; then
-            echo "npm ci ok"
-          else
-            echo "::warning::npm ci failed: $(grep -m8 'npm error' /tmp/npm.log | tr '\n' ' ' | sed 's/::/../g' | head -c 900)"
-            rm -f package-lock.json
-            npm install --no-audit --no-fund
-          fi
-          echo "::notice::node_modules $(test -d node_modules && echo present || echo MISSING), astro $(test -e node_modules/.bin/astro && echo yes || echo no)"
+        run: npm install --no-audit --no-fund
 
       - name: Build site
-        run: |
-          if npm run build > /tmp/build.log 2>&1; then
-            echo "::notice::dist files: $(find dist -type f | wc -l)"
-          else
-            echo "::error::build failed: $(tail -c 900 /tmp/build.log | tr '\n' ' ' | sed 's/::/../g')"
-            exit 1
-          fi
+        run: npm run build
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
