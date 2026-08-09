@@ -1,8 +1,8 @@
 ---
 title: 'RMSNorm backward (almost) without the column reduction'
 description: 'The RMSNorm backward pass is memory-bandwidth-bound, and the naive weight gradient doubles the traffic. Here is how to get rid of it.'
-pubDate: 2026-08-02
-draft: true
+pubDate: 2026-08-09
+draft: false
 ---
 
 RMSNorm is the default by now — in an autoregressive Transformer block you see it at least twice, often four times once you count the QK norms (and the same count again in the backward pass). Both passes are memory-bandwidth-bound: there's nowhere near enough arithmetic to hide the loads and stores behind. But backward is tricker than forward (we will see later why).
