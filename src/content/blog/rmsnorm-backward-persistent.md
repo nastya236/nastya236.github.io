@@ -5,7 +5,7 @@ pubDate: 2026-08-09
 draft: false
 ---
 
-RMSNorm is the default by now — in an autoregressive Transformer block you see it at least twice, often four times once you count the QK norms (and the same count again in the backward pass). Both passes are memory-bandwidth-bound: there's nowhere near enough arithmetic to hide the loads and stores behind. But backward is trickier than forward (we will see later why).
+RMSNorm is the default by now — in an autoregressive Transformer block we see it at least twice, often four times once we count the QK norms (and the same count again in the backward pass). Both passes are memory-bandwidth-bound: there's nowhere near enough arithmetic to hide the loads and stores behind. But backward is trickier than forward (we will see later why).
 I ran into this while working on the CUDA backend in MLX <a href="#ref-1">[1]</a>. The idea isn't mine — I took it from QuACK's <a href="#ref-2">[2]</a> RMSNorm backward.
 To see where the problem comes from, let's look at the math.
 
@@ -67,7 +67,7 @@ $$
 To compute the weight gradient we need to accumulate contributions from all $M$ rows.
 With a one-thread-block-per-row implementation, each block can compute its own
 per-row contribution to $\frac{\partial L}{\partial w}$ — but those contributions
-still have to be combined across rows. Another reduction axis.
+still have to be combined across rows. Another reduction axis!
 
 There are two ways to do this:
 
@@ -75,10 +75,7 @@ There are two ways to do this:
 2. write the per-row contributions to an intermediate $(M, N)$ tensor and do a
    second reduction over $M$.
 
-The first sounds appealing: no intermediate at all. But it serializes every block
-in the grid on the same $N$ addresses, and you inherit a non-deterministic
-summation order over thousands of terms, so the same input won't give you the same
-gradient twice. 
+The first sounds appealing: no intermediate at all. But for each of the $N$ outputs, all $M$ rows add into the same address: one at a time, and in an order decided by the scheduler at runtime. Since float addition isn't associative, a different order gives different bits — the same input won't give you the same gradient twice. So we can't use it.
 
 ## The naive kernel
 
@@ -88,9 +85,9 @@ we reduce it down the columns.
 
 That reduction cannot be done in one pass. The output is only $N$ floats, so if
 each thread owns one output there are at most $N$ threads — 64 blocks of 128 on a
-machine with ~148 SMs (B200), and eight times fewer once you use 16-byte vectorized
+machine with ~148 SMs (B200), and eight times fewer once we use 16-byte vectorized
 loads. At that occupancy there are nowhere near enough loads in flight to keep HBM
-busy, and the reduction alone would cost more than the rest of the kernel. So you
+busy, and the reduction alone would cost more than the rest of the kernel. So we
 split the rows across blocks too, every block emits a partial row, and those
 partials need a final combine:
 
@@ -199,20 +196,17 @@ block_sum_f2(cg::thread_block& block, float2 v, float2* smem) {
 }
 ```
 
-On a B200, with hidden dim 8192 and 16384 rows in bf16, this chain takes
-**440.54 µs**. It makes 5 passes over the $M \times N$ tensor where only 3 are
-unavoidable, which puts it around **38%** of the machine's 8 TB/s.
+On a B200, with hidden dim 8192 and 16384 rows in bf16, this chain  takes
+**440.54 µs** and does 5 passes over the $M \times N$ tensor, which puts it around **38%** of the machine's 8 TB/s.
 
 ## Why this is not good enough
 
 This works, but there is an obvious problem: we just wrote $M \times N$ values to
 global memory only to read all of them back in the next kernel. And as you remember,
-RMSNorm and its backward are memory-bandwidth-bound operations, so this final column reduction is a
-real bottleneck (we will see it later). Two of the five passes exist only to move
-$\partial L/\partial w$ through memory — the reduction costs as much as the rest of
-the kernel put together.
+RMSNorm and its backward are memory-bandwidth-bound operations, so this final column reduction is a bottleneck: two of the five passes exist only to move
+$\partial L/\partial w$ through memory.
 
-So the goal of this post is to explain how we can write the RMSNorm backward pass
+So the goal of this post is to show how we can write the RMSNorm backward pass
 with only a tiny column reduction — cutting the traffic, and with it the runtime.
 
 ## The persistent kernel
